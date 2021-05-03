@@ -1,0 +1,36 @@
+{
+  "name": "Raydium Auto Approval",
+  "version": "0.0.1",
+  "manifest_version": 2,
+  "description": "Auto approve all incoming tx, Use with caution !",
+  "homepage_url": "http://leodesigaux.com",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "default_locale": "en",
+  "permissions": [
+    "https://raydium.io/",
+    "https://raydium.io/*",
+    "https://www.raydium.io/",
+    "https://www.raydium.io/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://raydium.io/*",
+        "https://www.raydium.io/*"
+      ],
+      "js": [
+        "src/inject/inject.js"
+      ],
+      "css": [
+        "css/inject.css"
+      ]
+    }
+  ],
+  "web_accessible_resources": [
+    "src/inject/raydiumbot.js"
+  ]
+}
