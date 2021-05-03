@@ -3,10 +3,9 @@ document.querySelector("body").insertAdjacentHTML(
   `<div id="ld_console" class="opened">
 		<div class="header">
 		<button onclick="document.rBot.harvest('STEP-USDC LP')">harvest</button>
-		<button onclick="document.rBot.debug()">DEBUG</button>
 		<button onclick="document.rBot.swap('STEP', 'USDC')">swap</button>
+		<button onclick="document.rBot.liquidity('STEP', 'USDC')">liquidity</button>
 		<button onclick="document.rBot.autoharvest()">autoharvest</button>
-		<button onclick="document.rBot.connect()">CONNECT</button>
 		<button onclick="document.rBot.disconnect()">disconnect</button>
 		<button onclick="document.rBot.reconnect()">reconnect</button>
 		</div>
@@ -46,9 +45,9 @@ class RaydiumBot {
 								this.wait(".card-body button", 'Swap').then(item => {
 									item.click();
 									this.wait("div.ant-notification-notice-message", "Transaction has been confirmed").then(notification => {
-										notification.parentElement.parentElement.remove();
+										notification.parentElement.parentElement.parentElement.remove();
 										this.log('SWAPED '+balance+token1+" for "+document.querySelectorAll(".coin-select input[type=text]")[1].value+token2);
-										r();
+										this.reconnect().then(() => { r(); });
 									});
 								});
 							})
@@ -57,6 +56,42 @@ class RaydiumBot {
 				});
 			});
 		});
+	}
+	liquidity(token1, token2){
+		return new Promise(r => {
+			this.goToTab('liquidity').then(() => {
+				this.wait(".card-body .coin-select:nth-child(1) > div.label.fs-container > span", 'Input').then(select1Button => {
+					let btn = select1Button.parentElement.parentElement.querySelector('button.select-button').click();
+					this.wait(".ant-modal-content .token-info div", token1).then(token1Button => {
+						token1Button.parentElement.click();
+						this.wait(".card-body .coin-select:nth-child(3) > div.label.fs-container > span", 'Input').then(select2Button => {
+							let btn = select2Button.parentElement.parentElement.querySelector('button.select-button').click();
+							this.wait(".ant-modal-content .token-info div", token2).then(token2Button => {
+								token2Button.parentElement.click();
+								this.wait("#__layout .coin-select .max-button", "MAX").then(maxButton => {
+									maxButton.click();
+									this.wait(".price-base").then(() => {
+										let token1Amount = document.querySelector('.card-body .coin-select:nth-child(1) .coin-input input').value;
+										let token2Amount = document.querySelector('.card-body .coin-select:nth-child(3) .coin-input input').value;
+		
+										this.log('Trying to create Liquidity '+token1Amount+" "+token1+" + "+token2Amount+" "+token2);
+										console.log(token1Amount, token2Amount);
+										this.wait(".card-body button.ant-btn.ant-btn-lg.ant-btn-background-ghost", "Supply").then(supplyButton => {
+											supplyButton.click();
+											this.wait("div.ant-notification-notice-message", "Transaction has been confirmed").then(notification => {
+												notification.parentElement.parentElement.parentElement.remove();
+												this.log('Liquidity created '+token1Amount+" "+token1+" + "+token2Amount+" "+token2);
+												this.reconnect().then(() => { r(); });
+											});
+										});
+									})
+								})
+							})
+						})
+					})
+				})
+			})
+		})
 	}
 	debug() {		
 		setInterval(() => {
