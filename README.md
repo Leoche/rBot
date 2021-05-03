@@ -1,3 +1,3 @@
 <p align="center">
-<img src="./media/preview.png">
+<img src="./icons/icon128.png">
 </p>
