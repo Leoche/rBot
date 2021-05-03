@@ -2,11 +2,13 @@ document.querySelector("body").insertAdjacentHTML(
   "beforeend",
   `<div id="ld_console" class="opened">
 		<div class="header">
-		<button onclick="document.rBot.connect()">CONNECT</button>
 		<button onclick="document.rBot.harvest('STEP-USDC LP')">harvest</button>
 		<button onclick="document.rBot.debug()">DEBUG</button>
 		<button onclick="document.rBot.swap('STEP', 'USDC')">swap</button>
 		<button onclick="document.rBot.autoharvest()">autoharvest</button>
+		<button onclick="document.rBot.connect()">CONNECT</button>
+		<button onclick="document.rBot.disconnect()">disconnect</button>
+		<button onclick="document.rBot.reconnect()">reconnect</button>
 		</div>
 		<div class="inner">
 		</div>
@@ -151,6 +153,42 @@ class RaydiumBot {
 		});
 	});
   }
+  disconnect(){
+	return new Promise(r => {
+		this.log("Try to disconnect wallet...");
+		this.waitNo("#__layout > section > header > div.fs-container > div > button", 'Connect').then(connectButton => {
+			connectButton.click();
+			this.wait('.ant-modal-body button.ant-btn.ant-btn-background-ghost', 'DISCONNECT').then(disconnectButton => {
+				disconnectButton.click();
+				this.wait('.ant-modal-close-x').then(btn => {
+					btn.click();
+					this.wait('body > div.ant-notification.ant-notification-bottomLeft > span > div > div > div > div.ant-notification-notice-message', 'Wallet disconnected').then(btn => {
+						btn.parentElement.parentElement.parentElement.remove()
+						this.log("Wallet is Disconnected");
+						this.wait("#__layout > section > header > div.fs-container > div > button", 'Connect').then(connectButton => {
+							r();
+						});
+					});
+				});
+			});
+		});
+	});
+  }
+  reconnect(){
+	return new Promise(r => {
+		if(!this.isConnected()){
+			this.connect().then(() => {
+				r();
+			})
+		} else {
+			this.disconnect().then( () => {
+			  this.connect().then(() => {
+				  r();
+			  })
+			});
+		}
+	});
+  }
   isConnected(){
 	  return document.querySelector("#__layout > section > header > div.fs-container > div > button").innerText !== "Connect"
   }
@@ -161,6 +199,26 @@ class RaydiumBot {
 				root.querySelectorAll(selector).forEach(item => {
 					if(text != null){
 						if(item.innerText === text){
+							console.log(item.innerText);
+							clearInterval(this.interval);
+							setTimeout(e => { r(item); }, 500)
+						}
+					} else {
+						clearInterval(this.interval);
+						setTimeout(e => { r(item); }, 500)
+					}
+				})
+			}
+		}, 50)
+	});
+  }
+  waitNo(selector, text, root = document){
+	return new Promise(r => {
+		this.interval = setInterval(() => {
+			if(root.querySelectorAll(selector) != null){
+				root.querySelectorAll(selector).forEach(item => {
+					if(text != null){
+						if(item.innerText !== text){
 							console.log(item.innerText);
 							clearInterval(this.interval);
 							setTimeout(e => { r(item); }, 500)
