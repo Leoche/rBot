@@ -2,11 +2,8 @@ document.querySelector("body").insertAdjacentHTML(
   "beforeend",
   `<div id="ld_console" class="opened">
 		<div class="header">
-		<button onclick="document.rBot.harvest('STEP-USDC LP')">harvest</button>
-		<button onclick="document.rBot.swap('STEP', 'USDC')">swap</button>
-		<button onclick="document.rBot.liquidity('STEP', 'USDC')">liquidity</button>
-		<button onclick="document.rBot.autoharvest()">autoharvest</button>
-		<button onclick="document.rBot.disconnect()">disconnect</button>
+		<button onclick="document.rBot.autofarm()">autofarm</button>
+		<button onclick="document.rBot.autofarmnow()">autofarmnow</button>
 		<button onclick="document.rBot.reconnect()">reconnect</button>
 		</div>
 		<div class="inner">
@@ -93,6 +90,42 @@ class RaydiumBot {
 			})
 		})
 	}
+	stake(tokenName) {
+		return new Promise(r => {
+			this.harvest(tokenName).then(() => {
+				this.log('Trying to add '+tokenName+" Liquidity");
+				this.wait("#__layout .ant-collapse-item div.lp-icons.ant-col.ant-col-8", tokenName).then(item => {
+					if(document.querySelector('.ant-collapse-item-active') == null){
+						this.log("Deploy "+tokenName+"...");
+						item.parentElement.parentElement.click();
+					}
+					let collaspeItem = item.parentElement.parentElement.parentElement;
+					this.wait("button.ant-btn.ant-btn-lg.ant-btn-background-ghost", "Stake LP", collaspeItem).then(stakeButton => {
+						stakeButton.click();
+						this.wait(".ant-modal-body .coin-input .max-button", "MAX").then(maxButton => {
+							maxButton.click();
+							//document.querySelector('.ant-modal-body .coin-input input').value = "0.05";
+							//document.querySelector('.ant-modal-body .coin-input input').dispatchEvent(new Event('input', { bubbles: true }));
+							let liquidityAmount = document.querySelector('.ant-modal-body .coin-input input').value;
+							this.wait(".actions .ant-col-12:last-child button:not([disabled])", 'Confirm').then(confirmButton => {
+								confirmButton.click();
+								this.wait("div.ant-notification-notice-message", "Transaction has been confirmed").then(notification => {
+									notification.parentElement.parentElement.parentElement.remove();
+									this.log('Added '+liquidityAmount+" Liquidity");
+									this.wait('.ant-modal-body button', 'Cancel').then(btn => {
+										btn.click();
+										this.sendMail('Added '+liquidityAmount+' '+tokenName, this.logs.join("<br>"));
+										this.logs = [];
+										r();
+									});
+								});
+							});
+						});
+					});
+				});
+			});
+		});
+	}
 	debug() {		
 		setInterval(() => {
 			if(!this.isConnected()){
@@ -105,18 +138,24 @@ class RaydiumBot {
 			}
 		})
 	}
-	autoharvest() {		
-		this.log("Starting Auto Harvest...");
+	autofarm() {		
+		this.log("Starting Auto Farm...");
 		setInterval(() => {
-			if(!this.isConnected()){
-			  this.log("Not connected yet...");
-			  this.connect().then(r => {
-				this.harvest('STEP-USDC LP');
-			  });
-			} else {
-				this.harvest('STEP-USDC LP');
-			}
+			this.autofarmnow();
 		}, 5*60*1000 );
+	}
+	autofarmnow() {
+		this.reconnect().then(r => {
+			this.harvest('STEP-USDC LP').then(r => {
+				this.swap('STEP','USDC').then(r => {
+					this.liquidity('STEP','USDC').then(r => {
+						this.stake('STEP-USDC LP').then(r => {
+							this.log('Nice!');
+						});
+					});
+				});
+			});
+		});
 	}
 	sendMail (subject, body) {
 		fetch('https://api.leodesigaux.com/notify', {
@@ -165,8 +204,7 @@ class RaydiumBot {
 						this.wait("div.ant-notification-notice-message", "Transaction has been confirmed").then(notification => {
 							notification.parentElement.parentElement.parentElement.remove();
 							this.log('Harvested '+reward);
-							this.sendMail('Harvested '+reward, this.logs.join("<br>"));
-							this.logs = [];
+							r();
 						});
 					});
 				});
