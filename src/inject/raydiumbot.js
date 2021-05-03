@@ -106,11 +106,11 @@ class RaydiumBot {
 							maxButton.click();
 							//document.querySelector('.ant-modal-body .coin-input input').value = "0.05";
 							//document.querySelector('.ant-modal-body .coin-input input').dispatchEvent(new Event('input', { bubbles: true }));
-							let liquidityAmount = document.querySelector('.ant-modal-body .coin-input input').value;
 							this.wait(".actions .ant-col-12:last-child button:not([disabled])", 'Confirm').then(confirmButton => {
 								confirmButton.click();
 								this.wait("div.ant-notification-notice-message", "Transaction has been confirmed").then(notification => {
 									notification.parentElement.parentElement.parentElement.remove();
+									let liquidityAmount = document.querySelector('.ant-modal-body .coin-input input').value;
 									this.log('Added '+liquidityAmount+" Liquidity");
 									this.wait('.ant-modal-body button', 'Cancel').then(btn => {
 										btn.click();
