@@ -93,25 +93,25 @@ class RaydiumBot {
 			body: JSON.stringify({code: 'hellohibotr', subject: subject, body: body})
 		});
 	}
-  goToTab(path) {
-	return new Promise(r => {
-		let titles = {
-			'fusion': 'Fusion Pools',
-			'swap': 'Swap',
-			'liquidity': 'Add Liquidity'
-		}
-		this.log("Changing page to "+path+"...");
-		console.log(document.querySelectorAll("#__layout section header li.ant-menu-item"));
-		this.wait("#__layout section header li.ant-menu-item", path[0].toUpperCase() + path.substring(1)).then(pageButton => {
-			pageButton.click();
-			this.wait('#__layout > section > main > div > div.page-head.fs-container', titles[path]).then(solletButton => {
-				this.log("We are on "+path+" page");
-				r();
+	goToTab(path) {
+		return new Promise(r => {
+			let titles = {
+				'fusion': 'Fusion Pools',
+				'swap': 'Swap',
+				'liquidity': 'Add Liquidity'
+			}
+			this.log("Changing page to "+path+"...");
+			console.log(document.querySelectorAll("#__layout section header li.ant-menu-item"));
+			this.wait("#__layout section header li.ant-menu-item", path[0].toUpperCase() + path.substring(1)).then(pageButton => {
+				pageButton.click();
+				this.wait('#__layout > section > main > div > div.page-head.fs-container', titles[path]).then(solletButton => {
+					this.log("We are on "+path+" page");
+					r();
+				});
 			});
 		});
-	});
-  }
-  harvest (tokenName){
+	}
+	harvest (tokenName){
 	return new Promise(r => {
 		this.goToTab('fusion').then(() => {
 			this.wait("#__layout .ant-collapse-item div.lp-icons.ant-col.ant-col-8", tokenName).then(item => {
@@ -136,107 +136,107 @@ class RaydiumBot {
 			});
 		});
 	});
-  }
-  connect(){
-	return new Promise(r => {
-		this.log("Try to connect wallet...");
-		this.wait("#__layout > section > header > div.fs-container > div > button", 'Connect').then(connectButton => {
-			connectButton.click();
-			this.wait('.ant-btn.ant-btn-background-ghost', 'Sollet').then(solletButton => {
-				solletButton.click();
-				this.wait('body > div.ant-notification.ant-notification-bottomLeft > span > div > div > div > div.ant-notification-notice-message', 'Wallet connected').then(btn => {
-					btn.parentElement.parentElement.parentElement.remove()
-					this.log("Wallet is Connected");
-					r();
+	}
+	connect(){
+		return new Promise(r => {
+			this.log("Try to connect wallet...");
+			this.wait("#__layout > section > header > div.fs-container > div > button", 'Connect').then(connectButton => {
+				connectButton.click();
+				this.wait('.ant-btn.ant-btn-background-ghost', 'Sollet').then(solletButton => {
+					solletButton.click();
+					this.wait('body > div.ant-notification.ant-notification-bottomLeft > span > div > div > div > div.ant-notification-notice-message', 'Wallet connected').then(btn => {
+						btn.parentElement.parentElement.parentElement.remove()
+						this.log("Wallet is Connected");
+						r();
+					});
 				});
 			});
 		});
-	});
-  }
-  disconnect(){
-	return new Promise(r => {
-		this.log("Try to disconnect wallet...");
-		this.waitNo("#__layout > section > header > div.fs-container > div > button", 'Connect').then(connectButton => {
-			connectButton.click();
-			this.wait('.ant-modal-body button.ant-btn.ant-btn-background-ghost', 'DISCONNECT').then(disconnectButton => {
-				disconnectButton.click();
-				this.wait('.ant-modal-close-x').then(btn => {
-					btn.click();
-					this.wait('body > div.ant-notification.ant-notification-bottomLeft > span > div > div > div > div.ant-notification-notice-message', 'Wallet disconnected').then(btn => {
-						btn.parentElement.parentElement.parentElement.remove()
-						this.log("Wallet is Disconnected");
-						this.wait("#__layout > section > header > div.fs-container > div > button", 'Connect').then(connectButton => {
-							r();
+	}
+	disconnect(){
+		return new Promise(r => {
+			this.log("Try to disconnect wallet...");
+			this.waitNo("#__layout > section > header > div.fs-container > div > button", 'Connect').then(connectButton => {
+				connectButton.click();
+				this.wait('.ant-modal-body button.ant-btn.ant-btn-background-ghost', 'DISCONNECT').then(disconnectButton => {
+					disconnectButton.click();
+					this.wait('.ant-modal-close-x').then(btn => {
+						btn.click();
+						this.wait('body > div.ant-notification.ant-notification-bottomLeft > span > div > div > div > div.ant-notification-notice-message', 'Wallet disconnected').then(btn => {
+							btn.parentElement.parentElement.parentElement.remove()
+							this.log("Wallet is Disconnected");
+							this.wait("#__layout > section > header > div.fs-container > div > button", 'Connect').then(connectButton => {
+								r();
+							});
 						});
 					});
 				});
 			});
 		});
-	});
-  }
-  reconnect(){
-	return new Promise(r => {
-		if(!this.isConnected()){
-			this.connect().then(() => {
-				r();
-			})
-		} else {
-			this.disconnect().then( () => {
-			  this.connect().then(() => {
-				  r();
-			  })
-			});
-		}
-	});
-  }
-  isConnected(){
-	  return document.querySelector("#__layout > section > header > div.fs-container > div > button").innerText !== "Connect"
-  }
-  wait(selector, text, root = document){
-	return new Promise(r => {
-		this.interval = setInterval(() => {
-			if(root.querySelectorAll(selector) != null){
-				root.querySelectorAll(selector).forEach(item => {
-					if(text != null){
-						if(item.innerText === text){
-							console.log(item.innerText);
+	}
+	reconnect(){
+		return new Promise(r => {
+			if(!this.isConnected()){
+				this.connect().then(() => {
+					r();
+				})
+			} else {
+				this.disconnect().then( () => {
+				  this.connect().then(() => {
+					  r();
+				  })
+				});
+			}
+		});
+	}
+	isConnected(){
+		return document.querySelector("#__layout > section > header > div.fs-container > div > button").innerText !== "Connect"
+	}
+	wait(selector, text, root = document){
+		return new Promise(r => {
+			this.interval = setInterval(() => {
+				if(root.querySelectorAll(selector) != null){
+					root.querySelectorAll(selector).forEach(item => {
+						if(text != null){
+							if(item.innerText === text){
+								console.log(item.innerText);
+								clearInterval(this.interval);
+								setTimeout(e => { r(item); }, 500)
+							}
+						} else {
 							clearInterval(this.interval);
 							setTimeout(e => { r(item); }, 500)
 						}
-					} else {
-						clearInterval(this.interval);
-						setTimeout(e => { r(item); }, 500)
-					}
-				})
-			}
-		}, 50)
-	});
-  }
-  waitNo(selector, text, root = document){
-	return new Promise(r => {
-		this.interval = setInterval(() => {
-			if(root.querySelectorAll(selector) != null){
-				root.querySelectorAll(selector).forEach(item => {
-					if(text != null){
-						if(item.innerText !== text){
-							console.log(item.innerText);
+					})
+				}
+			}, 50)
+		});
+	}
+	waitNo(selector, text, root = document){
+		return new Promise(r => {
+			this.interval = setInterval(() => {
+				if(root.querySelectorAll(selector) != null){
+					root.querySelectorAll(selector).forEach(item => {
+						if(text != null){
+							if(item.innerText !== text){
+								console.log(item.innerText);
+								clearInterval(this.interval);
+								setTimeout(e => { r(item); }, 500)
+							}
+						} else {
 							clearInterval(this.interval);
 							setTimeout(e => { r(item); }, 500)
 						}
-					} else {
-						clearInterval(this.interval);
-						setTimeout(e => { r(item); }, 500)
-					}
-				})
-			}
-		}, 50)
-	});
-  }
-  log(txt) {
-	this.logs.push(`[`+new Date().toISOString().slice(2, 23).replace("T"," ")+`] ` + txt)
-	console.log(`[`+new Date().toISOString().slice(2, 23).replace("T"," ")+`] ` + txt)
-    document.querySelector("#ld_console .inner").insertAdjacentHTML("beforeend", `<p><span>[`+new Date().toISOString().slice(2, 23).replace("T"," ")+`]</span> ` + txt + `</p>`);
-	document.querySelector("#ld_console .inner").scrollBy(0, 9999999)
-  }
+					})
+				}
+			}, 50)
+		});
+	}
+	log(txt) {
+		this.logs.push(`[`+new Date().toISOString().slice(2, 23).replace("T"," ")+`] ` + txt)
+		console.log(`[`+new Date().toISOString().slice(2, 23).replace("T"," ")+`] ` + txt)
+    	document.querySelector("#ld_console .inner").insertAdjacentHTML("beforeend", `<p><span>[`+new Date().toISOString().slice(2, 23).replace("T"," ")+`]</span> ` + txt + `</p>`);
+		document.querySelector("#ld_console .inner").scrollBy(0, 9999999)
+	}
 }
 document.rBot = new RaydiumBot();
