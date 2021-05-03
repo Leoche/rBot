@@ -139,10 +139,10 @@ class RaydiumBot {
 		})
 	}
 	autofarm() {		
-		this.log("Starting Auto Farm...");
+		this.log("Starting AutoFarm...");
 		setInterval(() => {
 			this.autofarmnow();
-		}, 5*60*1000 );
+		}, 6*60*60*1000 );
 	}
 	autofarmnow() {
 		this.reconnect().then(r => {
