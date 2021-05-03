@@ -112,30 +112,31 @@ class RaydiumBot {
 		});
 	}
 	harvest (tokenName){
-	return new Promise(r => {
-		this.goToTab('fusion').then(() => {
-			this.wait("#__layout .ant-collapse-item div.lp-icons.ant-col.ant-col-8", tokenName).then(item => {
-				if(document.querySelector('.ant-collapse-item-active') == null){
-					this.log("Deploy "+tokenName+"...");
-					item.parentElement.parentElement.click();
-				}
-				let collaspeItem = item.parentElement.parentElement.parentElement;
-				console.log(collaspeItem);
-				this.wait(".pending > button", "Harvest", collaspeItem).then(harvestButton => {
-					console.log(harvestButton);
-					this.log('Harvesting...')
-					let reward = document.querySelector('.reward .token').innerText+" ";
-					harvestButton.click();
-					this.wait("div.ant-notification-notice-message", "Transaction has been confirmed").then(notification => {
-						notification.parentElement.parentElement.remove();
-						this.log('Harvested '+reward);
-						this.sendMail('Harvested '+reward, this.logs.join("<br>"));
-						this.logs = [];
+		return new Promise(r => {
+			this.goToTab('fusion').then(() => {
+				document.querySelector('.ant-progress').click();
+				this.wait("#__layout .ant-collapse-item div.lp-icons.ant-col.ant-col-8", tokenName).then(item => {
+					if(document.querySelector('.ant-collapse-item-active') == null){
+						this.log("Deploy "+tokenName+"...");
+						item.parentElement.parentElement.click();
+					}
+					let collaspeItem = item.parentElement.parentElement.parentElement;
+					console.log(collaspeItem);
+					this.wait(".pending > button", "Harvest", collaspeItem).then(harvestButton => {
+						console.log(harvestButton);
+						this.log('Harvesting...')
+						let reward = document.querySelector('.reward .token').innerText+" ";
+						harvestButton.click();
+						this.wait("div.ant-notification-notice-message", "Transaction has been confirmed").then(notification => {
+							notification.parentElement.parentElement.parentElement.remove();
+							this.log('Harvested '+reward);
+							this.sendMail('Harvested '+reward, this.logs.join("<br>"));
+							this.logs = [];
+						});
 					});
 				});
 			});
 		});
-	});
 	}
 	connect(){
 		return new Promise(r => {
